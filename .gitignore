@@ -1,0 +1,15 @@
+**/__pycache__
+**/.vscode
+**/*.o
+**/*.so
+**/.venv
+**/.coverage
+**/.coverage.*
+**/*.rpt
+**/htmlcov
+**/*.so
+
+build/
+dist/
+*.egg-info/
+.eggs/
