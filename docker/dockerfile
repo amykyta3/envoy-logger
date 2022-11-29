@@ -1,9 +1,11 @@
 FROM debian:bullseye-slim
 
+ADD https://raw.githubusercontent.com/amykyta3/enphase-power-logger/main/launcher.sh /
+RUN chmod +x /launcher.sh
+
 # Install Stuff
 RUN apt update
 RUN apt -y install python3 python3-pip git
-RUN python3 -m pip install -U git+https://github.com/amykyta3/enphase-power-logger
 
 ENV ENPHASE_EMAIL=name@example.com
 ENV ENPHASE_PASSWORD=password
@@ -15,4 +17,4 @@ ENV INFLUXDB_BUCKET_HR=high_rate
 ENV INFLUXDB_BUCKET_LR=low_rate
 
 # entrypoint
-CMD python3 -m power_logger
+CMD /launcher.sh

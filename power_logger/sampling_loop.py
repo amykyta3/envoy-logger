@@ -44,37 +44,34 @@ class SamplingLoop:
     def idb_points_from_sampledata(self, data: SampleData) -> List[Point]:
         points = []
         for i, line in enumerate(data.total_consumption.lines):
-            p = self.idb_point_from_powersample(f"consumption-line{i}", line)
+            p = self.idb_point_from_line("consumption", i, line)
             points.append(p)
-        p = self.idb_point_from_powersample("consumption-total", data.total_consumption)
         points.append(p)
 
         for i, line in enumerate(data.total_production.lines):
-            p = self.idb_point_from_powersample(f"production-line{i}", line)
+            p = self.idb_point_from_line("production", i, line)
             points.append(p)
-        p = self.idb_point_from_powersample("production-total", data.total_production)
         points.append(p)
 
         for i, line in enumerate(data.net_consumption.lines):
-            p = self.idb_point_from_powersample(f"net-line{i}", line)
+            p = self.idb_point_from_line("net", i, line)
             points.append(p)
-        p = self.idb_point_from_powersample("net-total", data.net_consumption)
         points.append(p)
 
         return points
 
-    def idb_point_from_powersample(self, name: str, data: Union[PowerSample, EIMSample]) -> Point:
-        p = Point(name)
+    def idb_point_from_line(self, measurement_type: str, idx: int, data: PowerSample) -> Point:
+        p = Point(f"{measurement_type}-line{idx}")
         p.time(data.ts, WritePrecision.S)
         p.tag("source", "power-meter")
+        p.tag("measurement-type", measurement_type)
+        p.tag("line-idx", idx)
 
         p.field("P", data.wNow)
         p.field("Q", data.reactPwr)
         p.field("S", data.apprntPwr)
-        #p.field("pf", data.pwrFactor)
 
-        if isinstance(data, PowerSample):
-            p.field("I_rms", data.rmsCurrent)
-            p.field("V_rms", data.rmsVoltage)
+        p.field("I_rms", data.rmsCurrent)
+        p.field("V_rms", data.rmsVoltage)
 
         return p
