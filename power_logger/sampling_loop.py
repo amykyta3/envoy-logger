@@ -1,12 +1,12 @@
 from datetime import datetime
 import time
-from typing import List, Union
+from typing import List
 
 from influxdb_client import WritePrecision, InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 from . import envoy
-from .model import SampleData, PowerSample, EIMSample
+from .model import SampleData, PowerSample
 
 class SamplingLoop:
     interval = 5

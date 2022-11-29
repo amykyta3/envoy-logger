@@ -1,11 +1,14 @@
 import requests
 import urllib3
 from datetime import datetime, timezone
+import logging
 
 from . import model
 
 # Local envoy access uses self-signed certificate. Ignore the warning
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+LOG = logging.getLogger("envoy")
 
 def login(token: str) -> str:
     """
@@ -20,7 +23,9 @@ def login(token: str) -> str:
         verify=False
     )
     response.raise_for_status() # raise HTTPError if one occurred
-    return response.cookies['sessionId']
+    session_id = response.cookies['sessionId']
+    LOG.info("Logged into envoy. SessionID: %s", session_id)
+    return session_id
 
 
 def get_power_data(session_id: str):
