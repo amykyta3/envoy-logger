@@ -57,55 +57,6 @@ class EIMSample:
             line = EIMLineSample(self, line_data)
             self.lines.append(line)
 
-    def _sum_all_lines(self, propname: str) -> float:
-        x = 0.0
-        for line in self.lines:
-            x += getattr(line, propname)
-        return x
-
-    @property
-    def wNow(self) -> float:
-        return self._sum_all_lines("wNow")
-    @property
-    def reactPwr(self) -> float:
-        return self._sum_all_lines("reactPwr")
-    @property
-    def apprntPwr(self) -> float:
-        return self._sum_all_lines("apprntPwr")
-    @property
-    def whToday(self) -> float:
-        return self._sum_all_lines("whToday")
-    @property
-    def vahToday(self) -> float:
-        return self._sum_all_lines("vahToday")
-    @property
-    def varhLagToday(self) -> float:
-        return self._sum_all_lines("varhLagToday")
-    @property
-    def varhLeadToday(self) -> float:
-        return self._sum_all_lines("varhLeadToday")
-    @property
-    def whLifetime(self) -> float:
-        return self._sum_all_lines("whLifetime")
-    @property
-    def vahLifetime(self) -> float:
-        return self._sum_all_lines("vahLifetime")
-    @property
-    def varhLagLifetime(self) -> float:
-        return self._sum_all_lines("varhLagLifetime")
-    @property
-    def varhLeadLifetime(self) -> float:
-        return self._sum_all_lines("varhLeadLifetime")
-    @property
-    def whLastSevenDays(self) -> float:
-        return self._sum_all_lines("whLastSevenDays")
-    @property
-    def pwrFactor(self) -> float:
-        if self.apprntPwr < 10.0:
-            return 1.0
-        return self.wNow / self.apprntPwr
-
-
 class EIMLineSample(PowerSample):
     """
     Sample for a Single "EIM" line sensor

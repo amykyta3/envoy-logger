@@ -27,6 +27,7 @@ S = SamplingLoop(
     influxdb_token,
     influxdb_org,
     influxdb_bucket_hr,
+    influxdb_bucket_lr,
 )
 
 S.run()
