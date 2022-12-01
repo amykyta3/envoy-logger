@@ -46,14 +46,14 @@ class SamplingLoop:
             token=self.influxdb_token,
             org=self.influxdb_org
         ) as client:
-            hr_points = self.idb_points_from_sampledata(data)
-            lr_points = self.get_daily_summary_points(data)
+            hr_points = self.get_high_rate_points(data)
+            lr_points = self.low_rate_points(data)
             with client.write_api(write_options=SYNCHRONOUS) as write_api:
                 write_api.write(bucket=self.influxdb_bucket_hr, record=hr_points)
                 if lr_points:
                     write_api.write(bucket=self.influxdb_bucket_lr, record=lr_points)
 
-    def idb_points_from_sampledata(self, data: SampleData) -> List[Point]:
+    def get_high_rate_points(self, data: SampleData) -> List[Point]:
         points = []
         for i, line in enumerate(data.total_consumption.lines):
             p = self.idb_point_from_line("consumption", i, line)
@@ -83,7 +83,7 @@ class SamplingLoop:
 
         return p
 
-    def get_daily_summary_points(self, data: SampleData) -> List[Point]:
+    def low_rate_points(self, data: SampleData) -> List[Point]:
         # First check if the day rolled over
         new_date = date.today()
         if self.todays_date == new_date:
@@ -99,21 +99,32 @@ class SamplingLoop:
             day_ts = datetime(td.year, td.month, td.day, 12).astimezone(timezone.utc)
 
             for i, line in enumerate(data.total_consumption.lines):
-                p = self.daily_idb_point_from_line("consumption", i, line, day_ts)
+                p = self.get_daily_line_deltas("consumption", i, line, day_ts)
                 points.append(p)
             for i, line in enumerate(data.total_production.lines):
-                p = self.daily_idb_point_from_line("production", i, line, day_ts)
+                p = self.get_daily_line_deltas("production", i, line, day_ts)
                 points.append(p)
             for i, line in enumerate(data.net_consumption.lines):
-                p = self.daily_idb_point_from_line("net", i, line, day_ts)
+                p = self.get_daily_line_deltas("net", i, line, day_ts)
                 points.append(p)
+
+        # Also log cumulative totals
+        for i, line in enumerate(data.total_consumption.lines):
+            p = self.get_line_cumulative_totals("consumption", i, line)
+            points.append(p)
+        for i, line in enumerate(data.total_production.lines):
+            p = self.get_line_cumulative_totals("production", i, line)
+            points.append(p)
+        for i, line in enumerate(data.net_consumption.lines):
+            p = self.get_line_cumulative_totals("net", i, line)
+            points.append(p)
 
         self.todays_date = new_date
 
 
         return points
 
-    def daily_idb_point_from_line(self, measurement_type: str, idx: int, data: PowerSample, day_ts: datetime) -> Point:
+    def get_daily_line_deltas(self, measurement_type: str, idx: int, data: PowerSample, day_ts: datetime) -> Point:
         p = Point(f"daily-{measurement_type}-line{idx}")
         p.time(day_ts, WritePrecision.S)
         p.tag("source", "power-meter")
@@ -135,5 +146,20 @@ class SamplingLoop:
         add_field("VAh", "vah")
         add_field("VARh-Lag", "varhLag")
         add_field("VARh-Lead", "varhLead")
+
+        return p
+
+    def get_line_cumulative_totals(self, measurement_type: str, idx: int, data: PowerSample) -> Point:
+        p = Point(f"{measurement_type}-cumulative-line{idx}")
+        p.time(data.ts, WritePrecision.S)
+        p.tag("source", "power-meter")
+        p.tag("measurement-type", measurement_type)
+        p.tag("line-idx", idx)
+        p.tag("interval", "cumulative")
+
+        p.field("Wh", data.whLifetime)
+        p.field("VAh", data.vahLifetime)
+        p.field("VARh-Lag", data.varhLagLifetime)
+        p.field("VARh-Lead", data.varhLeadLifetime)
 
         return p
