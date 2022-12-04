@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
+import logging
+LOG = logging.getLogger("envoy")
 
 class PowerSample:
     """
@@ -56,6 +58,8 @@ class EIMSample:
         for line_data in data['lines']:
             line = EIMLineSample(self, line_data)
             self.lines.append(line)
+
+        LOG.info(f"Sampled {len(self.lines)} different lines from measurement type: {data['measurementType']}")
 
 class EIMLineSample(PowerSample):
     """

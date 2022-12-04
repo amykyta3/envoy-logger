@@ -4,7 +4,10 @@ import os
 from . import enphaseenergy
 from .sampling_loop import SamplingLoop
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s [%(name)s]: %(message)s"
+)
 
 enphase_email = os.environ['ENPHASE_EMAIL']
 enphase_password = os.environ['ENPHASE_PASSWORD']
