@@ -11,7 +11,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 LOG = logging.getLogger("envoy")
 
-def login(token: str) -> str:
+def login(url: str, token: str) -> str:
     """
     Login to local envoy and return the session id
     """
@@ -19,7 +19,7 @@ def login(token: str) -> str:
         'Authorization': f'Bearer {token}',
     }
     response = requests.get(
-        'https://envoy.local/auth/check_jwt',
+        f'{url}/auth/check_jwt',
         headers=headers,
         verify=False,
         timeout=30,
@@ -30,14 +30,14 @@ def login(token: str) -> str:
     return session_id
 
 
-def get_power_data(session_id: str) -> model.SampleData:
+def get_power_data(url: str, session_id: str) -> model.SampleData:
     LOG.info("Fetching power data")
     ts = datetime.now(timezone.utc)
     cookies = {
         'sessionId': session_id,
     }
     response = requests.get(
-        'https://envoy.local/production.json?details=1',
+        f'{url}/production.json?details=1',
         cookies=cookies,
         verify=False,
         timeout=30,
@@ -48,14 +48,14 @@ def get_power_data(session_id: str) -> model.SampleData:
     return data
 
 
-def get_inverter_data(session_id: str) -> Dict[str, model.InverterSample]:
+def get_inverter_data(url: str, session_id: str) -> Dict[str, model.InverterSample]:
     LOG.info("Fetching inverter data")
     ts = datetime.now(timezone.utc)
     cookies = {
         'sessionId': session_id,
     }
     response = requests.get(
-        'https://envoy.local/api/v1/production/inverters',
+        f'{url}/api/v1/production/inverters',
         cookies=cookies,
         verify=False,
         timeout=30,
@@ -66,12 +66,12 @@ def get_inverter_data(session_id: str) -> Dict[str, model.InverterSample]:
     return data
 
 
-def get_inventory(session_id: str):
+def get_inventory(url: str, session_id: str):
     cookies = {
         'sessionId': session_id,
     }
     response = requests.get(
-        'https://envoy.local/inventory.json?deleted=1',
+        f'{url}/inventory.json?deleted=1',
         cookies=cookies,
         verify=False,
         timeout=30,

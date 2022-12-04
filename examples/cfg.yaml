@@ -1,0 +1,56 @@
+# Config file for envoy-logger
+
+# Required login info for enphaseenergy.com
+enphaseenergy:
+  email: name@example.com
+  password: mypassword123
+
+# Infermation about your specific Envoy instance
+envoy:
+  serial: 123456789012
+  url: https://envoy.local
+
+# How to access InfluxDB
+influxdb:
+  url: http://localhost:8086
+  token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  org: home
+
+  # Which InfluxDB bucket to send measurements.
+  # This can be useful to control different data-retention rules
+  # alternatively use the "bucket" key if you want everyhting to be sent to the
+  # same bucket
+  bucket_hr: high_rate
+  bucket_lr: low_rate
+
+# Since the Envoy only tracks panel-level inverter production by serial number,
+# it can be useful to provide InfluxDB measurements with additional tags that
+# further describe your panels. This is completely optional, but can be useful
+# metadata for your dashboard
+# This information can be extracted by logging into https://enlighten.enphaseenergy.com/
+# and viewing: https://enlighten.enphaseenergy.com/pv/systems/####/array_layout_x.json
+inverters:
+  "000000000001":
+    tags:
+      x: -50
+      y: -100
+      row: 1
+      col: 1
+  "000000000002":
+    tags:
+      x: 50
+      y: -100
+      row: 1
+      col: 2
+  "000000000003":
+    tags:
+      x: -50
+      y: -100
+      row: 2
+      col: 1
+  "000000000004":
+    tags:
+      x: 50
+      y: 100
+      row: 2
+      col: 2
