@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name="enphase-power-logger",
-    version="1.4",
+    version="1.6",
     packages=setuptools.find_packages(exclude=["test"]),
     include_package_data=True,
     python_requires='>=3.6',

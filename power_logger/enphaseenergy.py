@@ -19,7 +19,11 @@ def _login_enphaseenergy(email: str, password: str) -> str:
         'user[password]': (None, password),
     }
     url = 'https://enlighten.enphaseenergy.com/login/login.json?'
-    response = requests.post(url, files=files)
+    response = requests.post(
+        url,
+        files=files,
+        timeout=30,
+    )
     response.raise_for_status() # raise HTTPError if one occurred
     resp = response.json()
     return resp['session_id']
@@ -37,7 +41,11 @@ def get_new_token(email: str, password: str, envoy_serial: str) -> str:
         'serial_num': envoy_serial,
         'username': email,
     }
-    response = requests.post('https://entrez.enphaseenergy.com/tokens', json=json_data)
+    response = requests.post(
+        'https://entrez.enphaseenergy.com/tokens',
+        json=json_data,
+        timeout=30,
+    )
     response.raise_for_status() # raise HTTPError if one occurred
     return response.text
 

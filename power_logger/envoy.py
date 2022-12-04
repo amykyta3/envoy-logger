@@ -20,7 +20,8 @@ def login(token: str) -> str:
     response = requests.get(
         'https://envoy.local/auth/check_jwt',
         headers=headers,
-        verify=False
+        verify=False,
+        timeout=30,
     )
     response.raise_for_status() # raise HTTPError if one occurred
     session_id = response.cookies['sessionId']
@@ -29,6 +30,7 @@ def login(token: str) -> str:
 
 
 def get_power_data(session_id: str):
+    LOG.info("Fetching power data")
     ts = datetime.now(timezone.utc)
     cookies = {
         'sessionId': session_id,
@@ -36,7 +38,8 @@ def get_power_data(session_id: str):
     response = requests.get(
         'https://envoy.local/production.json?details=1',
         cookies=cookies,
-        verify=False
+        verify=False,
+        timeout=30,
     )
     response.raise_for_status() # raise HTTPError if one occurred
     json_data = response.json()
@@ -51,7 +54,8 @@ def get_inventory(session_id: str):
     response = requests.get(
         'https://envoy.local/inventory.json?deleted=1',
         cookies=cookies,
-        verify=False
+        verify=False,
+        timeout=30,
     )
     response.raise_for_status() # raise HTTPError if one occurred
     json_data = response.json()

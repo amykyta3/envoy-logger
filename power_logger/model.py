@@ -59,7 +59,7 @@ class EIMSample:
             line = EIMLineSample(self, line_data)
             self.lines.append(line)
 
-        LOG.info(f"Sampled {len(self.lines)} different lines from measurement type: {data['measurementType']}")
+        LOG.info(f"Sampled {len(self.lines)} power lines of type: {data['measurementType']}")
 
 class EIMLineSample(PowerSample):
     """
