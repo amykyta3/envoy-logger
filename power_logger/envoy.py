@@ -2,6 +2,7 @@ import requests
 import urllib3
 from datetime import datetime, timezone
 import logging
+from typing import Dict
 
 from . import model
 
@@ -29,7 +30,7 @@ def login(token: str) -> str:
     return session_id
 
 
-def get_power_data(session_id: str):
+def get_power_data(session_id: str) -> model.SampleData:
     LOG.info("Fetching power data")
     ts = datetime.now(timezone.utc)
     cookies = {
@@ -44,6 +45,24 @@ def get_power_data(session_id: str):
     response.raise_for_status() # raise HTTPError if one occurred
     json_data = response.json()
     data = model.SampleData(json_data, ts)
+    return data
+
+
+def get_inverter_data(session_id: str) -> Dict[str, model.InverterSample]:
+    LOG.info("Fetching inverter data")
+    ts = datetime.now(timezone.utc)
+    cookies = {
+        'sessionId': session_id,
+    }
+    response = requests.get(
+        'https://envoy.local/api/v1/production/inverters',
+        cookies=cookies,
+        verify=False,
+        timeout=30,
+    )
+    response.raise_for_status() # raise HTTPError if one occurred
+    json_data = response.json()
+    data = model.parse_inverter_data(json_data, ts)
     return data
 
 

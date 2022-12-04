@@ -1,12 +1,13 @@
 from datetime import datetime, date, timezone
 import time
 from typing import List, Optional, Dict
+import logging
 
 from influxdb_client import WritePrecision, InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 from . import envoy
-from .model import SampleData, PowerSample
+from .model import SampleData, PowerSample, InverterSample, filter_new_inverter_data
 
 class SamplingLoop:
     interval = 5
@@ -23,10 +24,13 @@ class SamplingLoop:
         self.todays_date = date.today()
         self.todays_starting_values = {} # Dict[str, float]
 
+        self.prev_inverter_data = None
+
     def run(self):
         while True:
             data = self.get_sample()
-            self.write_to_influxdb(data)
+            inverter_data = self.get_inverter_data()
+            self.write_to_influxdb(data, inverter_data)
 
     def get_sample(self) -> SampleData:
         # Determine how long until the next sample needs to be taken
@@ -40,20 +44,36 @@ class SamplingLoop:
 
         return data
 
-    def write_to_influxdb(self, data: SampleData) -> None:
+    def get_inverter_data(self) -> Dict[str, InverterSample]:
+        data = envoy.get_inverter_data(self.session_id)
+
+        if self.prev_inverter_data is None:
+            self.prev_inverter_data = data
+            # Hard to know how stale inverter data is, so discard this sample
+            # since I have nothing to compare to yet
+            return {}
+
+        # filter out stale inverter samples
+        filtered_data = filter_new_inverter_data(data, self.prev_inverter_data)
+        if filtered_data:
+            logging.info("Got %d unique inverter measurements", len(filtered_data))
+        self.prev_inverter_data = data
+        return filtered_data
+
+    def write_to_influxdb(self, data: SampleData, inverter_data: Dict[str, InverterSample]) -> None:
         with InfluxDBClient(
             url=self.influxdb_url,
             token=self.influxdb_token,
             org=self.influxdb_org
         ) as client:
-            hr_points = self.get_high_rate_points(data)
+            hr_points = self.get_high_rate_points(data, inverter_data)
             lr_points = self.low_rate_points(data)
             with client.write_api(write_options=SYNCHRONOUS) as write_api:
                 write_api.write(bucket=self.influxdb_bucket_hr, record=hr_points)
                 if lr_points:
                     write_api.write(bucket=self.influxdb_bucket_lr, record=lr_points)
 
-    def get_high_rate_points(self, data: SampleData) -> List[Point]:
+    def get_high_rate_points(self, data: SampleData, inverter_data: Dict[str, InverterSample]) -> List[Point]:
         points = []
         for i, line in enumerate(data.total_consumption.lines):
             p = self.idb_point_from_line("consumption", i, line)
@@ -63,6 +83,10 @@ class SamplingLoop:
             points.append(p)
         for i, line in enumerate(data.net_consumption.lines):
             p = self.idb_point_from_line("net", i, line)
+            points.append(p)
+
+        for inverter in inverter_data.values():
+            p = self.point_from_inverter(inverter)
             points.append(p)
 
         return points
@@ -80,6 +104,17 @@ class SamplingLoop:
 
         p.field("I_rms", data.rmsCurrent)
         p.field("V_rms", data.rmsVoltage)
+
+        return p
+
+    def point_from_inverter(self, inverter: InverterSample) -> Point:
+        p = Point(f"inverter-production-{inverter.serial}")
+        p.time(inverter.ts, WritePrecision.S)
+        p.tag("source", "power-meter")
+        p.tag("measurement-type", "inverter")
+        p.tag("serial", inverter.serial)
+
+        p.field("P", inverter.watts)
 
         return p
 

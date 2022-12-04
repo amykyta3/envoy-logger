@@ -1,5 +1,5 @@
-from datetime import datetime, timedelta
-from typing import Optional
+from datetime import datetime
+from typing import Optional, Dict
 import logging
 LOG = logging.getLogger("envoy")
 
@@ -94,3 +94,46 @@ class SampleData:
             if production_data['type'] == 'inverters':
                 # TODO: Parse this data too
                 pass
+
+
+#===============================================================================
+class InverterSample:
+    def __init__(self, data, ts: datetime) -> None:
+        # envoy time is not particularly accurate. Use my own ts
+        self.ts = ts
+
+        self.serial = data['serialNumber'] # type: str
+        self.report_ts = data['lastReportDate'] # type: int
+        self.watts = data['lastReportWatts'] # type: int
+
+def parse_inverter_data(data, ts: datetime) -> Dict[str, InverterSample]:
+    """
+    Parse inverter JSON list and return a dictionary of inverter samples, keyed
+    by their serial number
+    """
+    inverters = {}
+
+    for inverter_data in data:
+        inverter = InverterSample(inverter_data, ts)
+        inverters[inverter.serial] = inverter
+
+    return inverters
+
+def filter_new_inverter_data(new_data: Dict[str, InverterSample], prev_data: Dict[str, InverterSample]) -> Dict[str, InverterSample]:
+    """
+    Inverter measurements only update if inverter actually sends a reported
+    value.
+    Compare against a prior sample, and return a new dict of inverters samples
+    that only contains the unique measurements
+    """
+    unique_inverters = {}  # type: Dict[str, InverterSample]
+    for serial, inverter in new_data.items():
+        if serial not in prev_data.keys():
+            unique_inverters[serial] = inverter
+            continue
+
+        if inverter.report_ts != prev_data[serial].report_ts:
+            unique_inverters[serial] = inverter
+            continue
+
+    return unique_inverters
