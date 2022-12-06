@@ -60,7 +60,7 @@ class SamplingLoop:
         # filter out stale inverter samples
         filtered_data = filter_new_inverter_data(data, self.prev_inverter_data)
         if filtered_data:
-            logging.info("Got %d unique inverter measurements", len(filtered_data))
+            logging.debug("Got %d unique inverter measurements", len(filtered_data))
         self.prev_inverter_data = data
         return filtered_data
 
@@ -125,12 +125,6 @@ class SamplingLoop:
             return []
 
         # it is a new day!
-        midday_ts = datetime(
-            self.todays_date.year,
-            self.todays_date.month,
-            self.todays_date.day,
-            12
-        ).astimezone(timezone.utc)
         self.todays_date = new_date
 
         # Collect points that summarize prior day
@@ -147,7 +141,7 @@ class SamplingLoop:
             p = self.get_line_cumulative_totals("net", i, line)
             points.append(p)
 
-        wh_points = self.compute_daily_Wh_points(midday_ts)
+        wh_points = self.compute_daily_Wh_points(data.ts)
         points.extend(wh_points)
 
         return points

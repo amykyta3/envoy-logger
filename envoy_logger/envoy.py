@@ -31,7 +31,7 @@ def login(url: str, token: str) -> str:
 
 
 def get_power_data(url: str, session_id: str) -> model.SampleData:
-    LOG.info("Fetching power data")
+    LOG.debug("Fetching power data")
     ts = datetime.now(timezone.utc)
     cookies = {
         'sessionId': session_id,
@@ -49,7 +49,7 @@ def get_power_data(url: str, session_id: str) -> model.SampleData:
 
 
 def get_inverter_data(url: str, session_id: str) -> Dict[str, model.InverterSample]:
-    LOG.info("Fetching inverter data")
+    LOG.debug("Fetching inverter data")
     ts = datetime.now(timezone.utc)
     cookies = {
         'sessionId': session_id,
