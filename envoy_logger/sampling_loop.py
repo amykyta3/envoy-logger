@@ -162,12 +162,16 @@ class SamplingLoop:
         return p
 
     def compute_daily_Wh_points(self, ts: datetime) -> List[Point]:
+        # Not using integral(interpolate:"linear") since it does not do what you
+        # think it would mean. Without the "interoplation" arg, it still does
+        # linear interpolation correctly.
+        # https://github.com/influxdata/flux/issues/4782
         query = f"""
         from(bucket: "{self.cfg.influxdb_bucket_hr}")
             |> range(start: -24h, stop: 0h)
             |> filter(fn: (r) => r["source"] == "power-meter")
             |> filter(fn: (r) => r["_field"] == "P")
-            |> integral(unit: 1h, interpolate: "linear")
+            |> integral(unit: 1h)
             |> keep(columns: ["_value", "line-idx", "measurement-type", "serial"])
             |> yield(name: "total")
         """
