@@ -128,38 +128,9 @@ class SamplingLoop:
         self.todays_date = new_date
 
         # Collect points that summarize prior day
-        points = []
-
-        # log cumulative totals
-        for i, line in enumerate(data.total_consumption.lines):
-            p = self.get_line_cumulative_totals("consumption", i, line)
-            points.append(p)
-        for i, line in enumerate(data.total_production.lines):
-            p = self.get_line_cumulative_totals("production", i, line)
-            points.append(p)
-        for i, line in enumerate(data.net_consumption.lines):
-            p = self.get_line_cumulative_totals("net", i, line)
-            points.append(p)
-
-        wh_points = self.compute_daily_Wh_points(data.ts)
-        points.extend(wh_points)
+        points = self.compute_daily_Wh_points(data.ts)
 
         return points
-
-    def get_line_cumulative_totals(self, measurement_type: str, idx: int, data: PowerSample) -> Point:
-        p = Point(f"{measurement_type}-cumulative-line{idx}")
-        p.time(data.ts, WritePrecision.S)
-        p.tag("source", "power-meter")
-        p.tag("measurement-type", measurement_type)
-        p.tag("line-idx", idx)
-        p.tag("interval", "cumulative")
-
-        p.field("Wh", data.whLifetime)
-        p.field("VAh", data.vahLifetime)
-        p.field("VARh-Lag", data.varhLagLifetime)
-        p.field("VARh-Lead", data.varhLeadLifetime)
-
-        return p
 
     def compute_daily_Wh_points(self, ts: datetime) -> List[Point]:
         # Not using integral(interpolate:"linear") since it does not do what you
@@ -176,12 +147,14 @@ class SamplingLoop:
             |> yield(name: "total")
         """
         result = self.influxdb_query_api.query(query=query)
+        unreported_inverters = set(self.cfg.inverters.keys())
         points = []
         for table in result:
             for record in table.records:
                 measurement_type = record['measurement-type']
                 if measurement_type == "inverter":
                     serial = record['serial']
+                    unreported_inverters.discard(serial)
                     p = Point(f"inverter-daily-summary-{serial}")
                     p.tag("serial", serial)
                     self.cfg.apply_tags_to_inverter_point(p, serial)
@@ -197,5 +170,17 @@ class SamplingLoop:
 
                 p.field("Wh", record.get_value())
                 points.append(p)
+
+        # If any inverters did not report in for the day, fill in a 0wh measurement
+        for serial in unreported_inverters:
+            p = Point(f"inverter-daily-summary-{serial}")
+            p.tag("serial", serial)
+            self.cfg.apply_tags_to_inverter_point(p, serial)
+            p.time(ts, WritePrecision.S)
+            p.tag("source", "power-meter")
+            p.tag("measurement-type", measurement_type)
+            p.tag("interval", "24h")
+            p.field("Wh", 0)
+            points.append(p)
 
         return points
