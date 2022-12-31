@@ -180,7 +180,7 @@ class SamplingLoop:
             p.tag("source", "power-meter")
             p.tag("measurement-type", measurement_type)
             p.tag("interval", "24h")
-            p.field("Wh", 0)
+            p.field("Wh", 0.0)
             points.append(p)
 
         return points
