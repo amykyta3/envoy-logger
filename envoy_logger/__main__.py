@@ -31,5 +31,5 @@ while True:
 
         S.run()
     except RequestException as e:
-        logging.error(e)
+        logging.error("%s: %s", str(type(e)), e)
         logging.info("Restarting data logger")
