@@ -1,7 +1,8 @@
-from datetime import datetime, date, timezone
+from datetime import datetime, date
 import time
-from typing import List, Optional, Dict
+from typing import List, Dict
 import logging
+from requests.exceptions import ReadTimeout, ConnectTimeout
 
 from influxdb_client import WritePrecision, InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
@@ -31,10 +32,25 @@ class SamplingLoop:
         self.prev_inverter_data = None
 
     def run(self):
+        timeout_count = 0
         while True:
-            data = self.get_sample()
-            inverter_data = self.get_inverter_data()
-            self.write_to_influxdb(data, inverter_data)
+            try:
+                data = self.get_sample()
+                inverter_data = self.get_inverter_data()
+            except (ReadTimeout, ConnectTimeout) as e:
+                # Envoy gets REALLY MAD if you block it's access to enphaseenergy.com
+                # using a VLAN.
+                # It's software gets hung up for some reason, and some requests will stall.
+                # Allow envoy requests to timeout (and skip this sample iteration)
+                timeout_count += 1
+                logging.warning("Envoy request timed out (%d/10)", timeout_count)
+                if timeout_count >= 10:
+                    # Give up after a while
+                    raise
+                pass
+            else:
+                self.write_to_influxdb(data, inverter_data)
+                timeout_count = 0
 
     def get_sample(self) -> SampleData:
         # Determine how long until the next sample needs to be taken
