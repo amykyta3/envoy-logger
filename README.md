@@ -14,3 +14,13 @@ This Python-based logging application handles the following:
     * Per-phase voltage, phase angle, etc.
     * Per-panel production
 * Push samples to an InfluxDB database
+
+
+Once in an InfluxDB interface, one can query the data and display on a Grafana
+dashboard.
+
+Some examples:
+
+![daily](docs/dashboard-live.png)
+
+![daily](docs/dashboard-daily-totals.png)

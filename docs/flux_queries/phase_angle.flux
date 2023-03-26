@@ -1,4 +1,4 @@
-// Calculate power phase angle
+// Calculate power phase angle for each line
 import "math"
 from(bucket: "high_rate")
   |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
