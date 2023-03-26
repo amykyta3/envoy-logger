@@ -16,8 +16,7 @@ This Python-based logging application handles the following:
 * Push samples to an InfluxDB database
 
 
-Once in an InfluxDB interface, one can query the data and display on a Grafana
-dashboard.
+Once in an InfluxDB interface, you can display the data on a Grafana dashboard.
 
 Some examples:
 
