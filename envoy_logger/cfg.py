@@ -15,6 +15,7 @@ class Config:
 
             self.envoy_serial = str(data['envoy']['serial'])
             self.envoy_url = data['envoy'].get('url', 'https://envoy.local') # type: str
+            self.source_tag = data['envoy'].get('tag', 'envoy') # type: str
 
             self.influxdb_url = data['influxdb']['url'] # type: str
             self.influxdb_token = data['influxdb']['token'] # type: str

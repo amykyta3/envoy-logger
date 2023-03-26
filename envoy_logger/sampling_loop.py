@@ -108,7 +108,7 @@ class SamplingLoop:
     def idb_point_from_line(self, measurement_type: str, idx: int, data: PowerSample) -> Point:
         p = Point(f"{measurement_type}-line{idx}")
         p.time(data.ts, WritePrecision.S)
-        p.tag("source", "power-meter")
+        p.tag("source", self.cfg.source_tag)
         p.tag("measurement-type", measurement_type)
         p.tag("line-idx", idx)
 
@@ -124,7 +124,7 @@ class SamplingLoop:
     def point_from_inverter(self, inverter: InverterSample) -> Point:
         p = Point(f"inverter-production-{inverter.serial}")
         p.time(inverter.ts, WritePrecision.S)
-        p.tag("source", "power-meter")
+        p.tag("source", self.cfg.source_tag)
         p.tag("measurement-type", "inverter")
         p.tag("serial", inverter.serial)
         self.cfg.apply_tags_to_inverter_point(p, inverter.serial)
@@ -156,7 +156,7 @@ class SamplingLoop:
         query = f"""
         from(bucket: "{self.cfg.influxdb_bucket_hr}")
             |> range(start: -24h, stop: 0h)
-            |> filter(fn: (r) => r["source"] == "power-meter")
+            |> filter(fn: (r) => r["source"] == "{self.cfg.source_tag}")
             |> filter(fn: (r) => r["_field"] == "P")
             |> integral(unit: 1h)
             |> keep(columns: ["_value", "line-idx", "measurement-type", "serial"])
@@ -180,7 +180,7 @@ class SamplingLoop:
                     p.tag("line-idx", idx)
 
                 p.time(ts, WritePrecision.S)
-                p.tag("source", "power-meter")
+                p.tag("source", self.cfg.source_tag)
                 p.tag("measurement-type", measurement_type)
                 p.tag("interval", "24h")
 
@@ -193,7 +193,7 @@ class SamplingLoop:
             p.tag("serial", serial)
             self.cfg.apply_tags_to_inverter_point(p, serial)
             p.time(ts, WritePrecision.S)
-            p.tag("source", "power-meter")
+            p.tag("source", self.cfg.source_tag)
             p.tag("measurement-type", measurement_type)
             p.tag("interval", "24h")
             p.field("Wh", 0.0)

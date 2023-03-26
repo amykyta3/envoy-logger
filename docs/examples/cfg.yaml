@@ -10,6 +10,11 @@ envoy:
   serial: 123456789012
   url: https://envoy.local
 
+  # Give your envoy a name.
+  # All points logged will be tagged with "source=<tag>"
+  # Useful if you have multiple envoys
+  tag: power-meter
+
 # How to access InfluxDB
 influxdb:
   url: http://localhost:8086
