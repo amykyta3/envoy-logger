@@ -23,3 +23,8 @@ Some examples:
 ![daily](docs/dashboard-live.png)
 
 ![daily](docs/dashboard-daily-totals.png)
+
+
+## Set-up instructions
+
+I have written up a [general guide in case you're stuck](docs/Setup-Instructions.md).
