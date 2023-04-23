@@ -1,11 +1,12 @@
 # Config file for envoy-logger
 
-# Required login info for enphaseenergy.com
+# Your login info for enphaseenergy.com
 enphaseenergy:
   email: name@example.com
   password: mypassword123
 
-# Information about your specific Envoy instance
+# Information about your specific Envoy instance.
+# https://enlighten.enphaseenergy.com will report the serial number under the "IQ-Gateway" information
 envoy:
   serial: 123456789012
   url: https://envoy.local
@@ -27,27 +28,31 @@ influxdb:
   # same bucket
   bucket_hr: high_rate
   bucket_lr: low_rate
+  # bucket: all_data
 
 # Since the Envoy only tracks panel-level inverter production by serial number,
 # it can be useful to provide InfluxDB measurements with additional tags that
 # further describe your panels. This is completely optional, but can be useful
-# metadata for your dashboard
-# This information can be extracted by logging into https://enlighten.enphaseenergy.com/
-# and viewing: https://enlighten.enphaseenergy.com/pv/systems/####/array_layout_x.json
+# metadata for your dashboard.
+# You can figure out which inverter is which by logging into https://enlighten.enphaseenergy.com/
+# and viewing: https://enlighten.enphaseenergy.com/pv/systems/<account number>/array_layout_x.json
+# This will contain the X/Y coordinates of each inverter/panel.
+# Since my layout is pretty simple, I chose to tag them with simple row/column numbers.
+# Up to you to define a labeling scheme that works for you.
 inverters:
-  "000000000001":
+  "202212345600": # This is the inverter's serial number. NOT the inverter ID, module ID, or SKU as displayed in some places
     tags:
       row: 1
       col: 1
-  "000000000002":
+  "202212345601":
     tags:
       row: 1
       col: 2
-  "000000000003":
+  "202212345602":
     tags:
       row: 2
       col: 1
-  "000000000004":
+  "202212345603":
     tags:
       row: 2
       col: 2
