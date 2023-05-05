@@ -12,6 +12,8 @@ from(bucket: "low_rate")
   |> filter(fn: (r) => r["source"] == "power-meter")
   |> filter(fn: (r) => r["measurement-type"] == "inverter")
   |> filter(fn: (r) => r["_field"] == "Wh")
+  // make sure the "row" and "col" tags exist
+  |> filter(fn: (r) => exists r.row and exists r.col)
   // Panels are tagged with "row" and "col". Rather than labeling them by their
   // serial number, use row/column to label them as "R##-C##"
   |> map(fn: (r) => ({r with pos: "R" + zero_pad(v: r.row) + "-C" + zero_pad(v: r.col)}))
