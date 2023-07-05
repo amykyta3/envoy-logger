@@ -9,6 +9,7 @@ zero_pad = (v) => {
 
 from(bucket: "high_rate")
   |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+  |> filter(fn: (r) => r["source"] == "power-meter")
   |> filter(fn: (r) => r["measurement-type"] == "inverter")
   |> filter(fn: (r) => r["_field"] == "P")
   // make sure the "row" and "col" tags exist
