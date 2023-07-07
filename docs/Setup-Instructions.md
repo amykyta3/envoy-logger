@@ -46,3 +46,24 @@ When you view a dashboard, Grafana pulls data from the InfluxDB database to disp
 * Start building dashboards from your data!
     * You will need to define some Flux queries to tell Grafana what data to fetch and how to organize it.
     * I have shared the queries I use as a reference: https://github.com/amykyta3/envoy-logger/tree/main/docs/flux_queries
+
+## Common Issues
+
+### No "Totals" Data
+
+#### Symptoms
+
+Grafana panels for "Daily Totals" and "Per Panel Daily Totals" return "No Data"
+and script exits every day around midnight with a stack trace and "Not Found"
+message such as:
+
+    influxdb_client.rest.ApiException: (404)
+    Reason: Not Found
+    HTTP response headers: HTTPHeaderDict({'Content-Type': 'application/json; charset=utf-8', 'Vary': 'Accept-Encoding', 'X-Influxdb-Build': 'OSS', 'X-Influxdb-Version': 'v2.7.1', 'X-Platform-Error-Code': 'not found', 'Date': 'Thu, 06 Jul 2023 05:00:02 GMT', 'Transfer-Encoding': 'chunked'})
+    HTTP response body: b'{"code":"not found","message":"failed to initialize execute state: could not find bucket \\"low_rate\\""}'
+
+#### Cause
+
+The Influx API token in use has "WRITE" permissions but not "READ" permissions.
+The app requires "READ" permissions to calculate the daily data points that are
+inserted.
