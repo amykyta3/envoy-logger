@@ -33,11 +33,11 @@ it.
     * If running in a home automation server, you could wrap this into a docker container.
         * I have a rudimentary dockerfile you can use here: https://github.com/amykyta3/envoy-logger/blob/main/docs/examples/dockerfile
         * ... and a docker compose file too (volume paths will definitely be different for you): https://github.com/amykyta3/envoy-logger/blob/main/docs/examples/envoy-logger.yaml
-    * Alternatively, you coul run as a system service: https://github.com/amykyta3/envoy-logger/blob/main/docs/system-service.md
+    * Alternatively, you could run as a system service: https://github.com/amykyta3/envoy-logger/blob/main/docs/system-service.md
     * Whatever you choose to run the script, be sure to have the script re-start automatically if it exits.
 
 ## 3. Set up Grafana
-Grafana is the front-end visualization tool where you can design dashboards to desplay your data.
+Grafana is the front-end visualization tool where you can design dashboards to display your data.
 When you view a dashboard, Grafana pulls data from the InfluxDB database to display it.
 
 * Install Grafana

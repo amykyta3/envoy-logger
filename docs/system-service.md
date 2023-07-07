@@ -15,7 +15,7 @@ on shared servers, servers exposed to the Internet, or otherwise in environments
 where access to the server is not well controlled.
 
 Additionally, it would be a good idea to setup a second Enlighten account and
-grant acccess to it instead of using your "Owner" account.
+grant access to it instead of using your "Owner" account.
 
 https://support.enphase.com/s/article/How-can-I-add-users-to-my-Enlighten-account
 
