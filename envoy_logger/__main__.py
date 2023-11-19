@@ -18,18 +18,12 @@ args = parser.parse_args()
 
 cfg = load_cfg(args.cfg_path)
 
-while True:
-    # Loop forever so that if an exception occurs, logger will restart
-    try:
-        envoy_token = enphaseenergy.get_token(
-            cfg.enphase_email,
-            cfg.enphase_password,
-            cfg.envoy_serial
-        )
+envoy_token = enphaseenergy.get_token(
+    cfg.enphase_email,
+    cfg.enphase_password,
+    cfg.envoy_serial
+)
 
-        S = SamplingLoop(envoy_token, cfg)
+S = SamplingLoop(envoy_token, cfg)
 
-        S.run()
-    except RequestException as e:
-        logging.error("%s: %s", str(type(e)), e)
-        logging.info("Restarting data logger")
+S.run()
