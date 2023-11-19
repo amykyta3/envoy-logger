@@ -13,3 +13,6 @@ build/
 dist/
 *.egg-info/
 .eggs/
+
+cfg.yaml
+array_layout_x.json
