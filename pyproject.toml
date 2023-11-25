@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "envoy-logger"
+version = "0.1.0"
+description = "Scrapes data from Enphase Envoy local server and uploads to time-series databases"
+authors = ["Alex Mykyta <https://github.com/amykyta3>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+requests = "*"
+appdirs = "*"
+influxdb-client = "*"
+PyYAML = "*"
+
+[tool.poetry.group.dev.dependencies]
+black = "*"
+flake8 = "*"
+pytest = "*"
+pytest-mock = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
