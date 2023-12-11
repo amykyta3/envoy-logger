@@ -11,6 +11,7 @@ from . import envoy
 from .model import SampleData, PowerSample, InverterSample, filter_new_inverter_data
 from .cfg import Config
 
+
 class SamplingLoop:
     interval = 5
 
@@ -19,9 +20,7 @@ class SamplingLoop:
         self.session_id = envoy.login(self.cfg.envoy_url, token)
 
         influxdb_client = InfluxDBClient(
-            url=cfg.influxdb_url,
-            token=cfg.influxdb_token,
-            org=cfg.influxdb_org
+            url=cfg.influxdb_url, token=cfg.influxdb_token, org=cfg.influxdb_org
         )
         self.influxdb_write_api = influxdb_client.write_api(write_options=SYNCHRONOUS)
         self.influxdb_query_api = influxdb_client.query_api()
@@ -37,7 +36,7 @@ class SamplingLoop:
             try:
                 data = self.get_sample()
                 inverter_data = self.get_inverter_data()
-            except (ReadTimeout, ConnectTimeout) as e:
+            except (ReadTimeout, ConnectTimeout):
                 # Envoy gets REALLY MAD if you block it's access to enphaseenergy.com
                 # using a VLAN.
                 # It's software gets hung up for some reason, and some requests will stall.
@@ -80,14 +79,22 @@ class SamplingLoop:
         self.prev_inverter_data = data
         return filtered_data
 
-    def write_to_influxdb(self, data: SampleData, inverter_data: Dict[str, InverterSample]) -> None:
+    def write_to_influxdb(
+        self, data: SampleData, inverter_data: Dict[str, InverterSample]
+    ) -> None:
         hr_points = self.get_high_rate_points(data, inverter_data)
         lr_points = self.low_rate_points(data)
-        self.influxdb_write_api.write(bucket=self.cfg.influxdb_bucket_hr, record=hr_points)
+        self.influxdb_write_api.write(
+            bucket=self.cfg.influxdb_bucket_hr, record=hr_points
+        )
         if lr_points:
-            self.influxdb_write_api.write(bucket=self.cfg.influxdb_bucket_lr, record=lr_points)
+            self.influxdb_write_api.write(
+                bucket=self.cfg.influxdb_bucket_lr, record=lr_points
+            )
 
-    def get_high_rate_points(self, data: SampleData, inverter_data: Dict[str, InverterSample]) -> List[Point]:
+    def get_high_rate_points(
+        self, data: SampleData, inverter_data: Dict[str, InverterSample]
+    ) -> List[Point]:
         points = []
         for i, line in enumerate(data.total_consumption.lines):
             p = self.idb_point_from_line("consumption", i, line)
@@ -105,7 +112,9 @@ class SamplingLoop:
 
         return points
 
-    def idb_point_from_line(self, measurement_type: str, idx: int, data: PowerSample) -> Point:
+    def idb_point_from_line(
+        self, measurement_type: str, idx: int, data: PowerSample
+    ) -> Point:
         p = Point(f"{measurement_type}-line{idx}")
         p.time(data.ts, WritePrecision.S)
         p.tag("source", self.cfg.source_tag)
@@ -167,15 +176,15 @@ class SamplingLoop:
         points = []
         for table in result:
             for record in table.records:
-                measurement_type = record['measurement-type']
+                measurement_type = record["measurement-type"]
                 if measurement_type == "inverter":
-                    serial = record['serial']
+                    serial = record["serial"]
                     unreported_inverters.discard(serial)
                     p = Point(f"inverter-daily-summary-{serial}")
                     p.tag("serial", serial)
                     self.cfg.apply_tags_to_inverter_point(p, serial)
                 else:
-                    idx = record['line-idx']
+                    idx = record["line-idx"]
                     p = Point(f"{measurement_type}-daily-summary-line{idx}")
                     p.tag("line-idx", idx)
 
