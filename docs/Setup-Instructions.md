@@ -24,17 +24,20 @@ it.
     * Use this example file as a starting point: https://github.com/amykyta3/envoy-logger/blob/main/docs/examples/cfg.yaml
 * Locally test that the logging script can read from your Envoy, and push data to InfluxDB
     * You may want to do this locally first before moving to your home automation server, docker container, or whatever your preferred environment is. This will let you tweak settings faster.
-    * Clone and pip install, or pip install directly:
-        * `python3 -m pip install --force-reinstall git+https://github.com/amykyta3/envoy-logger`
-    * Launch the logging script: `python3 -m envoy_logger path/to/your/cfg.yaml`
+    * Clone this repo and run the launcher:
+        ```bash
+        ENVOY_LOGGER_CFG_PATH=path/tp/your/cfg.yaml ./launcher.sh
+        ```
     * If all goes well, you should see it go through authentication with both your Envoy and InfluxDB, and no error messages from the script.
     * Assuming that goes well, login to your InfluxDB back-end and start exploring the data using their "Data Explorer" tool. If it's working properly, you should start seeing the data flow in. I recommend that you poke around and get familiar with how the data is structured, since it will help you build queries for your dashboard later.
-* Once you have proven it works decently when running locally, it is up to you to figure out how to have the logging script run in your home setup.
-    * If running in a home automation server, you could wrap this into a docker container.
-        * I have a rudimentary dockerfile you can use here: https://github.com/amykyta3/envoy-logger/blob/main/docs/examples/dockerfile
-        * ... and a docker compose file too (volume paths will definitely be different for you): https://github.com/amykyta3/envoy-logger/blob/main/docs/examples/envoy-logger.yaml
+* Once you have proven it works decently when running locally, it is up to you to decide how you want this running continuously. Two options are provided:
+    * A docker image is published here: https://hub.docker.com/repository/docker/maniacmog/envoy-logger
+        * To run this with docker compose, use the template provided here: https://github.com/amykyta3/envoy-logger/blob/main/docs/examples/docker-compose.yml
+        * Or you can run manually:
+            ```bash
+            docker run --rm -v /path/to/your/cfg.yaml:/etc/envoy_logger/cfg.yaml maniacmog/envoy-logger:latest
+            ```
     * Alternatively, you could run as a system service: https://github.com/amykyta3/envoy-logger/blob/main/docs/system-service.md
-    * Whatever you choose to run the script, be sure to have the script re-start automatically if it exits.
 
 ## 3. Set up Grafana
 Grafana is the front-end visualization tool where you can design dashboards to display your data.
