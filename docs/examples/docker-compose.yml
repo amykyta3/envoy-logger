@@ -8,4 +8,6 @@ services:
     container_name: envoy_logger
     volumes:
       - /path/to/cfg.yaml:/etc/envoy_logger/cfg.yaml
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     restart: unless-stopped
