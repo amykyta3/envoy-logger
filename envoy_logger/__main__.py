@@ -1,5 +1,6 @@
 import logging
 import argparse
+import time
 
 from requests.exceptions import RequestException
 
@@ -32,4 +33,6 @@ while True:
         S.run()
     except RequestException as e:
         logging.error("%s: %s", str(type(e)), e)
+        logging.info("Waiting a bit before restarting...")
+        time.sleep(15)
         logging.info("Restarting data logger")
